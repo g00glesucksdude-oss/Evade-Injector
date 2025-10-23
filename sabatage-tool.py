@@ -1,10 +1,18 @@
 import os
 import re
 
-# 🧨 Ask for sabotage name and prefix it
+# 🔐 Ask for sabotage name and prefix it
 user_input = input("Enter sabotage name (e.g. errorcode404): ").strip()
 kill_switch_name = "shutdownflag_" + user_input
 
+# 💣 Self-destruct block
+def generate_self_destruct_block(flag: str) -> str:
+    return f"""if getgenv()['{flag}'] then
+    local _ = loadstring("💥")() -- runtime syntax bomb
+    error("Gatekeeper triggered: module self-destructed")
+end\n"""
+
+# 🧨 Inject runtime brakes into loops/functions/listeners
 def inject_runtime_brake(lines: list[str], kill_switch_name: str) -> list[str]:
     brake_line = f"if getgenv()['{kill_switch_name}'] then return end\n"
     output = []
@@ -13,7 +21,6 @@ def inject_runtime_brake(lines: list[str], kill_switch_name: str) -> list[str]:
     for i, line in enumerate(lines):
         stripped = line.strip()
 
-        # Detect loop/function/listener start
         if re.match(r"^(while|for|repeat|function\s|\w+\.Connect|\w+:Connect|coroutine\.create|spawn|task\.spawn)", stripped):
             output.append(line)
             indent = line[:len(line) - len(line.lstrip())]
@@ -34,10 +41,13 @@ def process_file(file_path: str, kill_switch_name: str):
 
         sabotaged_lines = inject_runtime_brake(lines, kill_switch_name)
 
+        # 💥 Inject self-destruct block at the top
+        sabotaged_lines.insert(0, generate_self_destruct_block(kill_switch_name))
+
         with open(file_path, "w", encoding="utf-8") as f:
             f.writelines(sabotaged_lines)
 
-        print(f"✅ Injected runtime sabotage using flag: {kill_switch_name}")
+        print(f"✅ Gatekeeper sabotage injected using flag: {kill_switch_name}")
         print(f"📄 File updated: {file_path}")
     except Exception as e:
         print(f"⚠️ Error: {e}")
