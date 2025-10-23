@@ -1,59 +1,59 @@
-# Gatekeeper Key Generator with Random Caesar, Nonce, Redeem Delay, Validity Duration
+import time
 import random
 
-# CJK digit set mapped to 0–9
-# ['龉', '齾', '鱻', '𪚥', '𩸽', '𪜀', '𪚧', '𪚿', '𪛇', '𪛉']
-CJK_DIGITS = ['(',')','^','$','%','@','!','#','&','*']
+# 🎭 Emoji digit set mapped to 0–9
+CJK_DIGITS = ['(', ')', '^', '$', '%', '@', '!', '#', '&', '*']
 CJK_MAP = {str(i): CJK_DIGITS[i] for i in range(10)}
 
 def letter_to_number(letter):
-    val = ord(letter.upper()) - 64
-    return f"{val:02d}"
+    return f"{ord(letter.upper()) - 64:02d}"
 
 def caesar_shift_digits(digits, shift):
-    shifted = [(int(d) + shift) % 10 for d in digits]
-    return ''.join(str(d) for d in shifted)
+    return ''.join(str((int(d) + shift) % 10) for d in digits)
 
 def digits_to_cjk(digits):
     return ''.join(CJK_MAP[d] for d in digits)
 
-def generate_key(keyword, redeem_delay, validity_duration):
-    # Random Caesar shift
-    shift = random.randint(1, 9)
+def encode_number(num, shift):
+    digits = str(num)
+    shifted = caesar_shift_digits(digits, shift)
+    return digits_to_cjk(shifted)
 
-    # Keyword → numeric → Caesar → CJK
+def encode_keyword(keyword, shift):
     numeric = ''.join(letter_to_number(c) for c in keyword if c.isalpha())
-    shifted_keyword = caesar_shift_digits(numeric, shift)
-    symbol_keyword = digits_to_cjk(shifted_keyword)
+    shifted = caesar_shift_digits(numeric, shift)
+    return digits_to_cjk(shifted)
 
-    # Redeem delay and validity duration
-    redeem_digits = caesar_shift_digits(str(redeem_delay), shift)
-    validity_digits = caesar_shift_digits(str(validity_duration), shift)
+def generate_key(keyword, redeem_duration_seconds, expire_after_seconds):
+    shift = random.randint(1, 9)
+    now = int(time.time())
 
-    redeem_cjk = digits_to_cjk(redeem_digits)
-    validity_cjk = digits_to_cjk(validity_digits)
+    valid_from = now
+    valid_until = now + redeem_duration_seconds
+    expire_at  = now + expire_after_seconds
+    nonce = random.randint(100000, 999999)
 
-    # Nonce: random 3-digit number
-    nonce_raw = str(random.randint(100, 999))
-    nonce_digits = caesar_shift_digits(nonce_raw, shift)
-    nonce_cjk = digits_to_cjk(nonce_digits)
+    valid_from_cjk = encode_number(valid_from, shift)
+    valid_until_cjk = encode_number(valid_until, shift)
+    expire_at_cjk = encode_number(expire_at, shift)
+    nonce_cjk = encode_number(nonce, shift)
+    keyword_cjk = encode_keyword(keyword, shift)
 
-    # Final format
-    return f"{redeem_cjk}_{validity_cjk}_{nonce_cjk}_{symbol_keyword}:{shift}"
+    return f"{valid_from_cjk}_{valid_until_cjk}_{expire_at_cjk}_{nonce_cjk}_{keyword_cjk}:{shift}"
 
 def main():
     print("🔐 Gatekeeper Key Generator")
     while True:
-        keyword = input("Enter keyword (e.g., gatekeeper): ").strip()
+        keyword = input("🔑 Keyword for script routing (e.g., evadeavoidanceofnx): ").strip()
         try:
-            redeem_delay = int(input("Enter redeem delay in seconds (e.g., 10): ").strip())
-            validity_duration = int(input("Enter validity duration in seconds (e.g., 30): ").strip())
+            redeem_duration = int(input("⏳ How many seconds the key is redeemable for: ").strip())
+            expire_after    = int(input("💣 How many seconds until shutdown flag triggers: ").strip())
         except ValueError:
-            print("❌ All inputs must be integers.")
+            print("❌ Invalid input. Use integers only.")
             continue
 
-        key = generate_key(keyword, redeem_delay, validity_duration)
-        print(f"\n✅ Generated Key: {key}\n")
+        key = generate_key(keyword, redeem_duration, expire_after)
+        print(f"\n✅ Generated Key:\n{key}\n")
 
         again = input("Generate another? (y/n): ").strip().lower()
         if again != 'y':
