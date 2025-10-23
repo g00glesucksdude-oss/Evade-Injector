@@ -1,0 +1,245 @@
+-- 🔧 Config
+local config = {
+    remoteURL = "https://raw.githubusercontent.com/g00glesucksdude-oss/Evade-Injector/main/",
+    debug = false
+}
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local player = Players.LocalPlayer
+
+-- 🎮 GUI Setup
+local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+gui.Name = "EvadeInjector"
+
+local frame = Instance.new("Frame", gui)
+frame.Size = UDim2.new(0, 400, 0, 250)
+frame.Position = UDim2.new(0.5, -200, 0.5, -125)
+frame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+frame.Active = true
+frame.Draggable = true
+
+local title = Instance.new("TextLabel", frame)
+title.Size = UDim2.new(1, -60, 0, 40)
+title.Position = UDim2.new(0, 10, 0, 0)
+title.Text = "Evade Injector"
+title.Font = Enum.Font.GothamBold
+title.TextSize = 24
+title.BackgroundTransparency = 1
+
+local function animateRGB(label)
+    local hue = 0
+    RunService.RenderStepped:Connect(function()
+        hue = (hue + 0.01) % 1
+        label.TextColor3 = Color3.fromHSV(hue, 1, 1)
+    end)
+end
+animateRGB(title)
+
+-- 🔘 Close + Minimize
+local close = Instance.new("TextButton", frame)
+close.Text = "✕"
+close.Size = UDim2.new(0, 25, 0, 25)
+close.Position = UDim2.new(1, -30, 0, 5)
+close.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
+close.MouseButton1Click:Connect(function() gui:Destroy() end)
+
+local minimize = Instance.new("TextButton", frame)
+minimize.Text = "—"
+minimize.Size = UDim2.new(0, 25, 0, 25)
+minimize.Position = UDim2.new(1, -60, 0, 5)
+minimize.BackgroundColor3 = Color3.fromRGB(0, 60, 60)
+local minimized = false
+minimize.MouseButton1Click:Connect(function()
+    minimized = not minimized
+    for _, obj in pairs(frame:GetChildren()) do
+        if obj ~= title and obj ~= close and obj ~= minimize then
+            obj.Visible = not minimized
+        end
+    end
+    frame.Size = minimized and UDim2.new(0, 400, 0, 50) or UDim2.new(0, 400, 0, 250)
+end)
+
+-- 🔣 Inputs
+local input = Instance.new("TextBox", frame)
+input.PlaceholderText = "Paste Gatekeeper key here"
+input.Size = UDim2.new(1, -20, 0, 30)
+input.Position = UDim2.new(0, 10, 0, 50)
+
+local validate = Instance.new("TextButton", frame)
+validate.Text = "Validate"
+validate.Size = UDim2.new(0.5, -15, 0, 30)
+validate.Position = UDim2.new(0, 10, 0, 90)
+
+local redeemLabel = Instance.new("TextLabel", frame)
+redeemLabel.Size = UDim2.new(1, -20, 0, 30)
+redeemLabel.Position = UDim2.new(0, 10, 0, 130)
+
+local validityLabel = Instance.new("TextLabel", frame)
+validityLabel.Size = UDim2.new(1, -20, 0, 30)
+validityLabel.Position = UDim2.new(0, 10, 0, 160)
+
+-- 🍽️ Emoji Digit Map
+local CJK = {"(",")","^","$","%","@","!","#","&","*"}
+local REVERSE = {}
+for i, v in ipairs(CJK) do REVERSE[v] = i - 1 end
+
+local function debug(msg)
+    if config.debug then print("[EvadeInjector] " .. msg) end
+end
+
+local function reverseDigits(symbols, shift)
+    debug("reverseDigits: input = " .. symbols .. ", shift = " .. tostring(shift))
+    local digits = {}
+    for i = 1, #symbols do
+        local char = symbols:sub(i,i)
+        local val = REVERSE[char]
+        debug("  char[" .. i .. "] = " .. tostring(char) .. ", mapped = " .. tostring(val))
+        if val == nil then
+            debug("  ❌ Unrecognized symbol: " .. tostring(char))
+            return nil
+        end
+        local d = (val - shift) % 10
+        debug("  shifted digit = " .. tostring(d))
+        table.insert(digits, tostring(d))
+    end
+    local resultStr = table.concat(digits)
+    debug("  final digit string = " .. resultStr)
+    local result = tonumber(resultStr)
+    if result == nil then
+        debug("  ❌ Failed to convert digits to number")
+    end
+    return result
+end
+
+local function decodeKeyword(symbols, shift)
+    debug("decodeKeyword: input = " .. symbols .. ", shift = " .. tostring(shift))
+    local digits = {}
+    for i = 1, #symbols do
+        local char = symbols:sub(i,i)
+        local val = REVERSE[char]
+        debug("  char[" .. i .. "] = " .. tostring(char) .. ", mapped = " .. tostring(val))
+        if val == nil then
+            debug("  ❌ Unrecognized symbol in keyword: " .. tostring(char))
+            return nil
+        end
+        local d = (val - shift) % 10
+        debug("  shifted digit = " .. tostring(d))
+        table.insert(digits, tostring(d))
+    end
+    local keyword = ""
+    for i = 1, #digits, 2 do
+        local pair = digits[i] .. (digits[i+1] or "0")
+        local num = tonumber(pair)
+        debug("  pair[" .. i .. "] = " .. pair .. ", char = " .. tostring(num and string.char((num - 1) + 65)))
+        if num then
+            keyword = keyword .. string.char((num - 1) + 65)
+        end
+    end
+    debug("  final keyword = " .. keyword:lower())
+    return keyword:lower()
+end
+
+-- 🗂️ Nonce Tracker
+local registryFile = "nonce_registry.txt"
+local nonceFileName
+if isfile(registryFile) then
+    nonceFileName = readfile(registryFile)
+else
+    nonceFileName = "nonce_" .. tostring(math.random(100000, 999999)) .. ".txt"
+    writefile(registryFile, nonceFileName)
+end
+
+local usedNonces = {}
+if isfile(nonceFileName) then
+    for line in string.gmatch(readfile(nonceFileName), "[^\r\n]+") do
+        usedNonces[tonumber(line)] = true
+    end
+end
+
+-- 🔘 Validate Logic
+validate.MouseButton1Click:Connect(function()
+    local raw = input.Text
+    debug("Raw input: " .. raw)
+    local parts = string.split(raw, "_")
+    if #parts < 4 then
+        debug("Invalid key format")
+        redeemLabel.Text = "❌ Invalid key format"
+        return
+    end
+
+    local shift = tonumber(string.match(raw, ":(%d+)"))
+    if not shift then
+        debug("Missing Caesar shift")
+        redeemLabel.Text = "❌ Missing Caesar shift"
+        return
+    end
+
+    local redeem = reverseDigits(parts[1], shift)
+    local validity = reverseDigits(parts[2], shift)
+    local nonce = reverseDigits(parts[3], shift)
+    local keyword = decodeKeyword(parts[4]:match("([^:]+)"), shift)
+
+    if not redeem or not validity or not nonce or not keyword then
+        redeemLabel.Text = "❌ Key decode failed"
+        debug("One or more segments failed to decode")
+        return
+    end
+
+    debug("Decoded keyword: " .. keyword)
+    debug("Nonce: " .. nonce)
+    debug("Redeem: " .. redeem .. "s, Validity: " .. validity .. "s")
+
+    if usedNonces[nonce] then
+        debug("Nonce already used")
+        redeemLabel.Text = "❌ Nonce already used"
+        return
+    end
+    usedNonces[nonce] = true
+    appendfile(nonceFileName, tostring(nonce) .. "\n")
+
+    local shutdownFlag = "shutdownflag_" .. keyword
+    getgenv()[shutdownFlag] = false
+
+    local redeemLeft = redeem
+    local validityLeft = validity
+
+    task.spawn(function()
+        while redeemLeft > 0 do
+            redeemLabel.Text = "Redeem time left: " .. redeemLeft .. "s"
+            redeemLeft -= 1
+            task.wait(1)
+        end
+                redeemLabel.Text = "✅ Key redeemed"
+
+        while validityLeft > 0 do
+            validityLabel.Text = "Validity time left: " .. validityLeft .. "s"
+            validityLeft -= 1
+            task.wait(1)
+        end
+        validityLabel.Text = "❌ Key expired"
+        getgenv()[shutdownFlag] = true
+        debug("Shutdown flag triggered: " .. shutdownFlag)
+    end)
+
+    -- 🛰️ Remote Loader
+    local url = config.remoteURL .. keyword .. ".lua"
+    debug("Attempting to load script from: " .. url)
+    local success, result = pcall(function()
+        return game:HttpGet(url)
+    end)
+
+    if success then
+        debug("✅ Script loaded successfully")
+        local ok, err = pcall(function()
+            loadstring(result)()
+        end)
+        if not ok then
+            debug("❌ Script execution failed: " .. tostring(err))
+            redeemLabel.Text = "❌ Script execution error"
+        end
+    else
+        debug("❌ Failed to load script: " .. tostring(result))
+        redeemLabel.Text = "❌ Script load failed"
+    end
+end)
