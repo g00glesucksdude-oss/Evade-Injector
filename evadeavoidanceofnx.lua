@@ -3,7 +3,7 @@ local player = game.Players.LocalPlayer
 
 -- Sabotage check
 local function isSabotaged()
-    return getgenv().evadeavoidanceofnx == true
+    return getgenv().shutdownflag_evadeavoidanceofnx == true
 end
 
 local function startScript()
