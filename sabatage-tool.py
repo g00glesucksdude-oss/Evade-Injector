@@ -1,3 +1,4 @@
+#AI version https://copilot.microsoft.com/shares/jqksgS6GWVqfdPwQXriMV
 import os
 import re
 
@@ -61,3 +62,4 @@ if not lua_files:
 else:
     latest = max(lua_files, key=lambda f: os.path.getmtime(os.path.join(folder, f)))
     process_file(os.path.join(folder, latest), kill_switch_name)
+
