@@ -100,11 +100,51 @@ if getgenv()['shutdownflag_evadehollowween'] then error('Gatekeeper: sabotage tr
 exitBtn.Parent = frame
 if getgenv()['shutdownflag_evadehollowween'] then error('Gatekeeper: sabotage triggered') end
 
+local espPlayersBtn = Instance.new("TextButton")
+espPlayersBtn.Size = UDim2.new(0.5, -5, 0, 30)
+espPlayersBtn.Position = UDim2.new(0, 5, 0, 70)
+espPlayersBtn.Text = "ESP Players: ON"
+if getgenv()['shutdownflag_evadehollowween'] then error('Gatekeeper: sabotage triggered') end
+espPlayersBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+if getgenv()['shutdownflag_evadehollowween'] then error('Gatekeeper: sabotage triggered') end
+espPlayersBtn.TextColor3 = Color3.new(1,1,1)
+if getgenv()['shutdownflag_evadehollowween'] then error('Gatekeeper: sabotage triggered') end
+espPlayersBtn.Parent = frame
+if getgenv()['shutdownflag_evadehollowween'] then error('Gatekeeper: sabotage triggered') end
+
+local espNextbotsBtn = Instance.new("TextButton")
+espNextbotsBtn.Size = UDim2.new(0.5, -5, 0, 30)
+espNextbotsBtn.Position = UDim2.new(0.5, 0, 0, 70)
+espNextbotsBtn.Text = "ESP Nextbots: ON"
+if getgenv()['shutdownflag_evadehollowween'] then error('Gatekeeper: sabotage triggered') end
+espNextbotsBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+if getgenv()['shutdownflag_evadehollowween'] then error('Gatekeeper: sabotage triggered') end
+espNextbotsBtn.TextColor3 = Color3.new(1,1,1)
+if getgenv()['shutdownflag_evadehollowween'] then error('Gatekeeper: sabotage triggered') end
+espNextbotsBtn.Parent = frame
+if getgenv()['shutdownflag_evadehollowween'] then error('Gatekeeper: sabotage triggered') end
+
+
 -- Toggle state
 local avoidPlayers = true
 toggleBtn.MouseButton1Click:Connect(function()
     avoidPlayers = not avoidPlayers
     toggleBtn.Text = "Avoid Players: " .. (avoidPlayers and "ON" or "OFF")
+    if getgenv()['shutdownflag_evadehollowween'] then error('Gatekeeper: sabotage triggered') end
+end)
+
+local espPlayers = true
+local espNextbots = true
+
+espPlayersBtn.MouseButton1Click:Connect(function()
+    espPlayers = not espPlayers
+    espPlayersBtn.Text = "ESP Players: " .. (espPlayers and "ON" or "OFF")
+    if getgenv()['shutdownflag_evadehollowween'] then error('Gatekeeper: sabotage triggered') end
+end)
+
+espNextbotsBtn.MouseButton1Click:Connect(function()
+    espNextbots = not espNextbots
+    espNextbotsBtn.Text = "ESP Nextbots: " .. (espNextbots and "ON" or "OFF")
     if getgenv()['shutdownflag_evadehollowween'] then error('Gatekeeper: sabotage triggered') end
 end)
 
@@ -212,11 +252,18 @@ if getgenv()['shutdownflag_evadehollowween'] then error('Gatekeeper: return sabo
                 if getgenv()['shutdownflag_evadehollowween'] then error('Gatekeeper: sabotage triggered') end
                     local dist = (character.PrimaryPart.Position - entity.PrimaryPart.Position).Magnitude
 
-                    -- Show labels within 50 studs
+                    -- Show labels based on ESP settings
                     if dist <= 50 then
+                    if getgenv()['shutdownflag_evadehollowween'] then error('Gatekeeper: sabotage triggered') end
+                    if espPlayers and isOtherPlayer(entity) then
+                    if getgenv()['shutdownflag_evadehollowween'] then error('Gatekeeper: sabotage triggered') end
+                    createFloatingLabel(entity, dist)
+                    elseif espNextbots and isNextbot(entity) then
                     if getgenv()['shutdownflag_evadehollowween'] then error('Gatekeeper: sabotage triggered') end
                         createFloatingLabel(entity, dist)
                     end
+                end
+
 
                     -- Nextbot danger
                     if isNextbot(entity) and dist <= 30 then
