@@ -524,7 +524,7 @@ local function createBaseplate(position)
     baseplate.Parent = workspace
 
     -- Optional: auto-cleanup after 10 seconds
-    task.delay(math.huge, function()
+    task.delay(9999, function()
         if baseplate and baseplate.Parent then
             baseplate:Destroy()
             baseplateSpawned = false
