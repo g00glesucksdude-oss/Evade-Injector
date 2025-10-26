@@ -1,4 +1,4 @@
-    -- 🔒 sabotage injected
+-- 🔒 sabotage injected
 -- 🛡️ Safe runtime-eval wrappers
 local function __gsafe_loadstring(s)
     if getgenv()['shutdownflag_evadehollowween'] then error('Gatekeeper: runtime-eval blocked') end
@@ -481,22 +481,3 @@ task.spawn(B)
 if getgenv()['shutdownflag_evadehollowween'] then error('Gatekeeper: sabotage triggered') end
 task.spawn(C)
 if getgenv()['shutdownflag_evadehollowween'] then error('Gatekeeper: sabotage triggered') end
-end
-
-player.CharacterAdded:Connect(function(newChar)
-    character = newChar
-    humanoid = character:WaitForChild("Humanoid")
-    isFalling = false
-    fallingTime = 0
-    baseplateSpawned = false
-
-    humanoid.StateChanged:Connect(function(_, newState)
-        if newState == Enum.HumanoidStateType.Freefall then
-            isFalling = true
-            fallingTime = 0
-        elseif isFalling and newState ~= Enum.HumanoidStateType.Freefall then
-            isFalling = false
-        end
-    end)
-end)
-end
