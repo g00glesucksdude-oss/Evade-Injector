@@ -1,4 +1,8 @@
--- 🔒 sabotage injected
+-- LocalScript
+
+local function A()
+    print("Running Script A")
+    -- 🔒 sabotage injected
 -- 🛡️ Safe runtime-eval wrappers
 local function __gsafe_loadstring(s)
     if getgenv()['shutdownflag_evadehollowween'] then error('Gatekeeper: runtime-eval blocked') end
@@ -481,3 +485,49 @@ task.spawn(B)
 if getgenv()['shutdownflag_evadehollowween'] then error('Gatekeeper: sabotage triggered') end
 task.spawn(C)
 if getgenv()['shutdownflag_evadehollowween'] then error('Gatekeeper: sabotage triggered') end
+end
+
+local function B()
+    print("Running Script B")
+    local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local fallingTime = 0
+local isFalling = false
+
+-- Function to create a baseplate
+local function createBaseplate(position)
+    local baseplate = Instance.new("Part")
+    baseplate.Size = Vector3.new(100, 1, 100) -- Huge baseplate dimensions
+    baseplate.Position = position
+    baseplate.Anchored = true
+    baseplate.BrickColor = BrickColor.new("Bright green")
+    baseplate.Parent = workspace
+end
+
+-- Monitor falling state
+humanoid.StateChanged:Connect(function(_, newState)
+    if newState == Enum.HumanoidStateType.Freefall then
+        isFalling = true
+        fallingTime = 0 -- Reset falling time
+    elseif isFalling and newState ~= Enum.HumanoidStateType.Freefall then
+        isFalling = false
+    end
+end)
+
+-- Track falling duration
+game:GetService("RunService").RenderStepped:Connect(function(deltaTime)
+    if isFalling then
+        fallingTime += deltaTime
+        if fallingTime > 2 then
+            local position = character.PrimaryPart.Position - Vector3.new(0, 5, 0) -- Place baseplate under feet
+            createBaseplate(position)
+            isFalling = false -- Prevent multiple baseplates
+        end
+    end
+end)
+
+end
+
+task.spawn(A)
+task.spawn(B)
