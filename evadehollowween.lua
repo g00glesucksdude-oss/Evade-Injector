@@ -1,7 +1,3 @@
--- LocalScript
-
-local function A()
-    print("Running Script A")
     -- 🔒 sabotage injected
 -- 🛡️ Safe runtime-eval wrappers
 local function __gsafe_loadstring(s)
@@ -487,77 +483,6 @@ task.spawn(C)
 if getgenv()['shutdownflag_evadehollowween'] then error('Gatekeeper: sabotage triggered') end
 end
 
-local function B()
-    print("Running Script B")
-    local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-
-local player = Players.LocalPlayer
-local character = player.Character or player.CharacterAdded:Wait()
-local humanoid = character:WaitForChild("Humanoid")
-local fallingTime = 0
-local isFalling = false
-local baseplateSpawned = false
-
--- Function to safely get PrimaryPart
-local function getPrimaryPartSafe(char)
-    if char and char:IsA("Model") and char.PrimaryPart then
-        return char.PrimaryPart
-    else
-        return char:FindFirstChild("HumanoidRootPart") or char:FindFirstChildWhichIsA("BasePart")
-    end
-end
-
--- Function to create a baseplate with unique name and anti-clutter logic
-local function createBaseplate(position)
-    if baseplateSpawned then return end
-    baseplateSpawned = true
-
-    local baseplate = Instance.new("Part")
-    baseplate.Name = "AutoBaseplate_" .. tostring(math.random(1000, 9999))
-    baseplate.Size = Vector3.new(100, 1, 100)
-    baseplate.Position = position
-    baseplate.Anchored = true
-    baseplate.BrickColor = BrickColor.new("Bright green")
-    baseplate.CanCollide = true
-    baseplate.Locked = true
-    baseplate.Parent = workspace
-
-    -- Optional: auto-cleanup after 10 seconds
-    task.delay(9999, function()
-        if baseplate and baseplate.Parent then
-            baseplate:Destroy()
-            baseplateSpawned = false
-        end
-    end)
-end
-
--- Monitor falling state
-humanoid.StateChanged:Connect(function(_, newState)
-    if newState == Enum.HumanoidStateType.Freefall then
-        isFalling = true
-        fallingTime = 0
-    elseif isFalling and newState ~= Enum.HumanoidStateType.Freefall then
-        isFalling = false
-    end
-end)
-
--- Track falling duration
-RunService.RenderStepped:Connect(function(deltaTime)
-    if isFalling then
-        fallingTime += deltaTime
-        if fallingTime > 0.5 then
-            local primaryPart = getPrimaryPartSafe(character)
-            if primaryPart then
-                local position = primaryPart.Position - Vector3.new(0, 5, 0)
-                createBaseplate(position)
-            end
-            isFalling = false
-        end
-    end
-end)
-
--- Reconnect on character respawn
 player.CharacterAdded:Connect(function(newChar)
     character = newChar
     humanoid = character:WaitForChild("Humanoid")
@@ -575,6 +500,3 @@ player.CharacterAdded:Connect(function(newChar)
     end)
 end)
 end
-
-task.spawn(A)
-task.spawn(B)
