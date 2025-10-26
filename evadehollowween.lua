@@ -475,9 +475,15 @@ local function C()
     __gsafe_loadstring(game:HttpGet("https://pastebin.com/raw/RXfzrMS4",true))()
 end
 
+local function D()
+    print{"Running Script D"}
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/g00glesucksdude-oss/BackEnd/refs/heads/main/Savefallif2seconds",true))()
+end
+
 task.spawn(A)
 if getgenv()['shutdownflag_evadehollowween'] then error('Gatekeeper: sabotage triggered') end
 task.spawn(B)
 if getgenv()['shutdownflag_evadehollowween'] then error('Gatekeeper: sabotage triggered') end
 task.spawn(C)
 if getgenv()['shutdownflag_evadehollowween'] then error('Gatekeeper: sabotage triggered') end
+task.spawn(D)
