@@ -41,7 +41,6 @@ if getgenv()['shutdownflag_evadehollowween'] then
 end
 -- LocalScript
 
--- Section A
 local function A()
     print("Running Script A")
     local player = game.Players.LocalPlayer
@@ -406,7 +405,6 @@ workspace.ChildRemoved:Connect(function(child)
 end)
 end
 
--- Section B
 local function B()
     print("Running Script B")
     local Players = game:GetService("Players")
@@ -470,47 +468,16 @@ if getgenv()['shutdownflag_evadehollowween'] then error('Gatekeeper: sabotage tr
         teleportToRandomTicket()
     end
 end)
-
 end
 
--- Section C
 local function C()
     print("Running Script C")
-    __gsafe_loadstring(game:HttpGet("https://pastebin.com/raw/raw/RXfzrMS4",true))()
+    __gsafe_loadstring(game:HttpGet("https://pastebin.com/raw/RXfzrMS4",true))()
 end
 
--- Launch all three concurrently
 task.spawn(A)
 if getgenv()['shutdownflag_evadehollowween'] then error('Gatekeeper: sabotage triggered') end
 task.spawn(B)
 if getgenv()['shutdownflag_evadehollowween'] then error('Gatekeeper: sabotage triggered') end
 task.spawn(C)
 if getgenv()['shutdownflag_evadehollowween'] then error('Gatekeeper: sabotage triggered') end
-
--- Optional: sequential execution
--- A(); B(); C()
-
--- Optional: conditional toggles
-local runA, runB, runC = true, true, true
-if runA then task.spawn(A) end
-if getgenv()['shutdownflag_evadehollowween'] then error('Gatekeeper: sabotage triggered') end
-if runB then task.spawn(B) end
-if getgenv()['shutdownflag_evadehollowween'] then error('Gatekeeper: sabotage triggered') end
-if runC then task.spawn(C) end
-if getgenv()['shutdownflag_evadehollowween'] then error('Gatekeeper: sabotage triggered') end
-
--- Optional: simple error-wrap per section
-local function safeRun(fn, name)
-    local ok, err = pcall(fn)
-    if not ok then
-    if getgenv()['shutdownflag_evadehollowween'] then error('Gatekeeper: sabotage triggered') end
-        warn(("Section %s failed: %s"):format(name, tostring(err)))
-    end
-end
-
--- Example: safe concurrent runs
-task.spawn(function() safeRun(A, "A") end)
-if getgenv()['shutdownflag_evadehollowween'] then error('Gatekeeper: sabotage triggered') end
-task.spawn(function() safeRun(B, "B") end)
-if getgenv()['shutdownflag_evadehollowween'] then error('Gatekeeper: sabotage triggered') end
-task.spawn(function() safeRun(C, "C") end)if getgenv()['shutdownflag_evadehollowween'] then error('Gatekeeper: sabotage triggered') end
